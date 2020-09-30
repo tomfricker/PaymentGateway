@@ -13,9 +13,15 @@ namespace PaymentGateway.Data.Models
 
         public string CVV { get; set; }
 
-        public string ExpiryDate { get; set; }
+        public string ExpiryYear { get; set; }
 
         public string ExpiryMonth { get; set; }
+
+        public decimal Amount { get; set; }
+
+        public string CurrencyCode { get; set; }
+
+        public Guid BankResponseId { get; set; }
 
         public PaymentStatusCode PaymentStatus { get; set; }
     }

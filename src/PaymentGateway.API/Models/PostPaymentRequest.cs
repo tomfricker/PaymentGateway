@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace PaymentGateway.API.Models
+﻿namespace PaymentGateway.API.Models
 {
-    public class PaymentRequest
+    public class PostPaymentRequest
     {
+        public string Name { get; set; }
+
         public string CardNumber { get; set; }
 
         public string ExpiryMonth { get; set; }
