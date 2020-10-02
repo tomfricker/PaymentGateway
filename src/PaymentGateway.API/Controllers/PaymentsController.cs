@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Logging;
 using PaymentGateway.API.Extensions;
 using PaymentGateway.API.Models;
 using PaymentGateway.API.Services.Contracts;
@@ -25,12 +26,14 @@ namespace PaymentGateway.API.Controllers
         private readonly IPaymentRepository _paymentRepository;
         private readonly IBankRequestService _bankRequestService;
         private readonly IMapper _mapper;
+        private readonly ILogger<PaymentsController> _logger;
 
-        public PaymentsController(IPaymentRepository paymentRepository, IBankRequestService bankRequestService, IMapper mapper)
+        public PaymentsController(IPaymentRepository paymentRepository, IBankRequestService bankRequestService, IMapper mapper, ILogger<PaymentsController> logger)
         {
             _paymentRepository = paymentRepository;
             _bankRequestService = bankRequestService;
             _mapper = mapper;
+            _logger = logger;
         }
 
         [HttpPost]
@@ -44,6 +47,8 @@ namespace PaymentGateway.API.Controllers
 
             if (dbUpdate)
             {
+                _logger.LogInformation($"POST - Starting request to bank for payment {payment.Id}");
+
                 var bankResponse =  await _bankRequestService.PostBankRequestAsync(bankRequest);
 
                 payment.BankResponseId = bankResponse.Id;
@@ -56,6 +61,7 @@ namespace PaymentGateway.API.Controllers
                 return postPaymentResponse;
             }
 
+            _logger.LogError($"POST - Failed to write to database for request ${request.Name} {request.CardNumber.MaskCard()}");
             return new PostPaymentResponse();
         }
 
@@ -66,12 +72,14 @@ namespace PaymentGateway.API.Controllers
 
             if (payment == null)
             {
+                _logger.LogWarning($"GET - Requested payment Id {id} not found");
                 return NotFound();
             }
 
             var response = _mapper.Map<GetPaymentResponse>(payment);
             response.CardNumber = response.CardNumber.MaskCard();
 
+            _logger.LogWarning($"GET - Requested payment Id {id} returned OK");
             return Ok(response);
         }
     }
