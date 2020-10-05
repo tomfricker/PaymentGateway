@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using PaymentGateway.API.Extensions;
 using PaymentGateway.API.Models;
@@ -28,7 +29,10 @@ namespace PaymentGateway.API.Controllers
         private readonly IMapper _mapper;
         private readonly ILogger<PaymentsController> _logger;
 
-        public PaymentsController(IPaymentRepository paymentRepository, IBankRequestService bankRequestService, IMapper mapper, ILogger<PaymentsController> logger)
+        public PaymentsController(IPaymentRepository paymentRepository, 
+            IBankRequestService bankRequestService,
+            IMapper mapper, 
+            ILogger<PaymentsController> logger)
         {
             _paymentRepository = paymentRepository;
             _bankRequestService = bankRequestService;
@@ -37,19 +41,19 @@ namespace PaymentGateway.API.Controllers
         }
 
         [HttpPost]
-        public async Task<PostPaymentResponse> Post([FromBody]PostPaymentRequest request)
+        public async Task<IActionResult> Post([FromBody]PostPaymentRequest request)
         {
             var payment = _mapper.Map<Payment>(request);
             payment.Id = Guid.NewGuid();
             var bankRequest = _mapper.Map<BankRequest>(request);
 
-            var dbUpdate = await _paymentRepository.AddPaymentAsync(payment);
-
-            if (dbUpdate)
+            try
             {
+                await _paymentRepository.AddPaymentAsync(payment);
+
                 _logger.LogInformation($"POST - Starting request to bank for payment {payment.Id}");
 
-                var bankResponse =  await _bankRequestService.PostBankRequestAsync(bankRequest);
+                var bankResponse = await _bankRequestService.PostBankRequestAsync(bankRequest);
 
                 payment.BankResponseId = bankResponse.Id;
                 payment.PaymentStatus = bankResponse.PaymentStatus;
@@ -58,11 +62,13 @@ namespace PaymentGateway.API.Controllers
 
                 var postPaymentResponse = new PostPaymentResponse { PaymentId = payment.Id };
 
-                return postPaymentResponse;
+                return Ok(postPaymentResponse);
             }
-
-            _logger.LogError($"POST - Failed to write to database for request ${request.Name} {request.CardNumber.MaskCard()}");
-            return new PostPaymentResponse();
+            catch (Exception ex)
+            {
+                _logger.LogError($"POST - Failed due to exception ${ex.GetType()} with error ${ex.Message} for request ${request}");
+                return StatusCode(500);
+            }            
         }
 
         [HttpGet]

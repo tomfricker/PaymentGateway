@@ -52,6 +52,7 @@ namespace PaymentGateway.API
                     }));
 
             services.AddTransient<IBankRequestService, BankRequestService>();
+            services.AddSingleton<IEncryptionService, AesEncryptionService>();
             services.AddAutoMapper(Assembly.GetAssembly(typeof(PaymentProfile)));
         }
 

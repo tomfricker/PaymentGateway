@@ -1,11 +1,13 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
 using PaymentGateway.API.Controllers;
 using PaymentGateway.API.Extensions;
 using PaymentGateway.API.Models;
 using PaymentGateway.API.Services.Contracts;
+using PaymentGateway.Core.Models;
 using PaymentGateway.Data.Models;
 using PaymentGateway.Data.Repositories.Contracts;
 using System;
@@ -66,16 +68,24 @@ namespace PaymentGateway.Test.ApiTests
             Assert.Equal(mapperResponse.PaymentStatus, getPaymentResponse.PaymentStatus);
         }
 
-        private PaymentsController SetupTestController()
+        [Fact]
+        public async Task Post_DatabaseFails_Returns500()
         {
             var mockPaymentRepo = new Mock<IPaymentRepository>();
             var mockLogger = new Mock<ILogger<PaymentsController>>();
             var mockMapper = new Mock<IMapper>();
             var mockBankRequestService = new Mock<IBankRequestService>();
 
-            mockPaymentRepo.Setup(x => x.GetPaymentAsync(It.IsAny<Guid>())).ReturnsAsync(() => null);
+            var payment = new Payment { Id = Guid.NewGuid() };
+            mockPaymentRepo.Setup(x => x.AddPaymentAsync(It.IsAny<Payment>())).Throws(new DbUpdateException());
+            mockMapper.Setup(x => x.Map<Payment>(It.IsAny<PostPaymentRequest>())).Returns(payment);
 
-            return new PaymentsController(mockPaymentRepo.Object, mockBankRequestService.Object, mockMapper.Object, mockLogger.Object);
+            var paymentsController = new PaymentsController(mockPaymentRepo.Object, mockBankRequestService.Object, mockMapper.Object, mockLogger.Object);
+
+            var response = await paymentsController.Post(new PostPaymentRequest { CardNumber = "4111111111111111" });
+
+            var statusCodeResult = Assert.IsType<StatusCodeResult>(response);
+            Assert.Equal(500, statusCodeResult.StatusCode);
         }
     }
 }
