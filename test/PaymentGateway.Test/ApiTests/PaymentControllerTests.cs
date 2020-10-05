@@ -94,6 +94,23 @@ namespace PaymentGateway.Test.ApiTests
         }
 
         [Fact]
+        public async Task Post_InvalidModel_Returns400()
+        {
+            var mockPaymentRepo = new Mock<IPaymentRepository>();
+            var mockLogger = new Mock<ILogger<PaymentsController>>();
+            var mockMapper = new Mock<IMapper>();
+            var mockBankRequestService = new Mock<IBankRequestService>();
+            var mockEncryptionService = new Mock<IEncryptionService>();
+
+            var paymentsController = new PaymentsController(mockPaymentRepo.Object, mockBankRequestService.Object, mockEncryptionService.Object, mockMapper.Object, mockLogger.Object);
+            paymentsController.ModelState.AddModelError("Name", "Required");
+
+            var response = await paymentsController.Post(new PostPaymentRequest { CardNumber = "4111" });
+
+            Assert.IsType<BadRequestResult>(response);
+        }
+
+        [Fact]
         public async Task Post_Success_Returns200()
         {
             var mockPaymentRepo = new Mock<IPaymentRepository>();

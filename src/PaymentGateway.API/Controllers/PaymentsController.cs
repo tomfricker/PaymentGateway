@@ -21,7 +21,7 @@ using PaymentGateway.Data.Repositories.Contracts;
 namespace PaymentGateway.API.Controllers
 {
     [Authorize]
-    [Route("api/[controller]/{id?}")]
+    [Route("api/[controller]")]
     [ApiController]
     public class PaymentsController : ControllerBase
     {
@@ -47,10 +47,17 @@ namespace PaymentGateway.API.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody]PostPaymentRequest request)
         {
+            if(!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+
+            var paymentId = Guid.NewGuid();
+
             try
             {
                 var payment = _mapper.Map<Payment>(request);
-                payment.Id = Guid.NewGuid();
+                payment.Id = paymentId;
                 payment.CardNumber = _encryptionService.Encrypt(request.CardNumber);
                 var bankRequest = _mapper.Map<BankRequest>(request);
 
@@ -71,12 +78,12 @@ namespace PaymentGateway.API.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError($"POST - Failed due to exception ${ex.GetType()} with error ${ex.Message} for request ${request}");
+                _logger.LogError($"POST - Failed due to exception ${ex.GetType()} with error ${ex.Message} for request ${paymentId}");
                 return StatusCode(500);
             }            
         }
 
-        [HttpGet]
+        [HttpGet("{id}")]
         public async Task<IActionResult> Get(Guid id)
         {
             try

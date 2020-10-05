@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Microsoft.AspNetCore.Server.IIS.Core;
+using Microsoft.Extensions.Configuration;
 using PaymentGateway.API.Services.Contracts;
 using System;
 using System.Collections.Generic;
@@ -21,6 +22,11 @@ namespace PaymentGateway.API.Services
             _config = config;
             _key = Encoding.ASCII.GetBytes(_config["Key"]);
             _iv = Encoding.ASCII.GetBytes(_config["Iv"]);
+
+            if(_key.Length != 16 || _iv.Length != 16)
+            {
+                throw new ArgumentOutOfRangeException("Key and Iv must be 16 characters long");
+            }
         }
 
         public byte[] Encrypt(string str)
