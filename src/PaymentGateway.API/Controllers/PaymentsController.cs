@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
@@ -26,16 +27,19 @@ namespace PaymentGateway.API.Controllers
     {
         private readonly IPaymentRepository _paymentRepository;
         private readonly IBankRequestService _bankRequestService;
+        private readonly IEncryptionService _encryptionService;
         private readonly IMapper _mapper;
         private readonly ILogger<PaymentsController> _logger;
 
         public PaymentsController(IPaymentRepository paymentRepository, 
             IBankRequestService bankRequestService,
+            IEncryptionService encryptionService,
             IMapper mapper, 
             ILogger<PaymentsController> logger)
         {
             _paymentRepository = paymentRepository;
             _bankRequestService = bankRequestService;
+            _encryptionService = encryptionService;
             _mapper = mapper;
             _logger = logger;
         }
@@ -43,12 +47,13 @@ namespace PaymentGateway.API.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody]PostPaymentRequest request)
         {
-            var payment = _mapper.Map<Payment>(request);
-            payment.Id = Guid.NewGuid();
-            var bankRequest = _mapper.Map<BankRequest>(request);
-
             try
             {
+                var payment = _mapper.Map<Payment>(request);
+                payment.Id = Guid.NewGuid();
+                payment.CardNumber = _encryptionService.Encrypt(request.CardNumber);
+                var bankRequest = _mapper.Map<BankRequest>(request);
+
                 await _paymentRepository.AddPaymentAsync(payment);
 
                 _logger.LogInformation($"POST - Starting request to bank for payment {payment.Id}");
@@ -56,7 +61,7 @@ namespace PaymentGateway.API.Controllers
                 var bankResponse = await _bankRequestService.PostBankRequestAsync(bankRequest);
 
                 payment.BankResponseId = bankResponse.Id;
-                payment.PaymentStatus = bankResponse.PaymentStatus;
+                payment.PaymentStatus = bankResponse.PaymentStatus;                
 
                 await _paymentRepository.UpdatePaymentAsync(payment);
 
@@ -74,19 +79,27 @@ namespace PaymentGateway.API.Controllers
         [HttpGet]
         public async Task<IActionResult> Get(Guid id)
         {
-            var payment = await _paymentRepository.GetPaymentAsync(id);
-
-            if (payment == null)
+            try
             {
-                _logger.LogWarning($"GET - Requested payment Id {id} not found");
-                return NotFound();
+                var payment = await _paymentRepository.GetPaymentAsync(id);
+
+                if (payment == null)
+                {
+                    _logger.LogWarning($"GET - Requested payment Id {id} not found");
+                    return NotFound();
+                }
+
+                var response = _mapper.Map<GetPaymentResponse>(payment);
+                response.CardNumber = _encryptionService.Decrypt(payment.CardNumber).MaskCard();
+
+                _logger.LogInformation($"GET - Requested payment Id {id} returned OK");
+                return Ok(response);
             }
-
-            var response = _mapper.Map<GetPaymentResponse>(payment);
-            response.CardNumber = response.CardNumber.MaskCard();
-
-            _logger.LogWarning($"GET - Requested payment Id {id} returned OK");
-            return Ok(response);
+            catch (Exception ex)
+            {
+                _logger.LogError($"GET - Failed due to exception ${ex.GetType()} with error ${ex.Message} for request on ID ${id}");
+                return StatusCode(500);
+            }
         }
     }
 }

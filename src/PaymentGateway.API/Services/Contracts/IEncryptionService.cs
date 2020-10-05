@@ -2,8 +2,8 @@
 {
     public interface IEncryptionService
     {
-        byte[] Encrypt(string credential);
+        byte[] Encrypt(string str);
 
-        string Decrypt(byte[] encryptedCredential);
+        string Decrypt(byte[] encryptedString);
     }
 }

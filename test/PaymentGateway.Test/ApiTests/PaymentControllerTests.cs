@@ -10,6 +10,7 @@ using PaymentGateway.API.Services.Contracts;
 using PaymentGateway.Core.Models;
 using PaymentGateway.Data.Models;
 using PaymentGateway.Data.Repositories.Contracts;
+using PaymentGateway.Mock.BankA.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -27,10 +28,11 @@ namespace PaymentGateway.Test.ApiTests
             var mockLogger = new Mock<ILogger<PaymentsController>>();
             var mockMapper = new Mock<IMapper>();
             var mockBankRequestService = new Mock<IBankRequestService>();
+            var mockEncryptionService = new Mock<IEncryptionService>();
 
             mockPaymentRepo.Setup(x => x.GetPaymentAsync(It.IsAny<Guid>())).ReturnsAsync(() => null);
 
-            var paymentsController =  new PaymentsController(mockPaymentRepo.Object, mockBankRequestService.Object, mockMapper.Object, mockLogger.Object);
+            var paymentsController =  new PaymentsController(mockPaymentRepo.Object, mockBankRequestService.Object, mockEncryptionService.Object, mockMapper.Object, mockLogger.Object);
             
             var response = await paymentsController.Get(Guid.NewGuid());
 
@@ -44,6 +46,7 @@ namespace PaymentGateway.Test.ApiTests
             var mockLogger = new Mock<ILogger<PaymentsController>>();
             var mockMapper = new Mock<IMapper>();
             var mockBankRequestService = new Mock<IBankRequestService>();
+            var mockEncryptionService = new Mock<IEncryptionService>();
 
             var mapperResponse = new GetPaymentResponse
             {
@@ -55,8 +58,9 @@ namespace PaymentGateway.Test.ApiTests
 
             mockPaymentRepo.Setup(x => x.GetPaymentAsync(It.IsAny<Guid>())).ReturnsAsync(() => new Payment());
             mockMapper.Setup(x => x.Map<GetPaymentResponse>(It.IsAny<Payment>())).Returns(mapperResponse);
+            mockEncryptionService.Setup(x => x.Decrypt(It.IsAny<byte[]>())).Returns("4111111111111111");
 
-            var paymentsController = new PaymentsController(mockPaymentRepo.Object, mockBankRequestService.Object, mockMapper.Object, mockLogger.Object);
+            var paymentsController = new PaymentsController(mockPaymentRepo.Object, mockBankRequestService.Object, mockEncryptionService.Object, mockMapper.Object, mockLogger.Object);
 
             var response = await paymentsController.Get(Guid.NewGuid());
 
@@ -75,17 +79,40 @@ namespace PaymentGateway.Test.ApiTests
             var mockLogger = new Mock<ILogger<PaymentsController>>();
             var mockMapper = new Mock<IMapper>();
             var mockBankRequestService = new Mock<IBankRequestService>();
+            var mockEncryptionService = new Mock<IEncryptionService>();
 
             var payment = new Payment { Id = Guid.NewGuid() };
             mockPaymentRepo.Setup(x => x.AddPaymentAsync(It.IsAny<Payment>())).Throws(new DbUpdateException());
             mockMapper.Setup(x => x.Map<Payment>(It.IsAny<PostPaymentRequest>())).Returns(payment);
 
-            var paymentsController = new PaymentsController(mockPaymentRepo.Object, mockBankRequestService.Object, mockMapper.Object, mockLogger.Object);
+            var paymentsController = new PaymentsController(mockPaymentRepo.Object, mockBankRequestService.Object, mockEncryptionService.Object, mockMapper.Object, mockLogger.Object);
 
             var response = await paymentsController.Post(new PostPaymentRequest { CardNumber = "4111111111111111" });
 
             var statusCodeResult = Assert.IsType<StatusCodeResult>(response);
             Assert.Equal(500, statusCodeResult.StatusCode);
+        }
+
+        [Fact]
+        public async Task Post_Success_Returns200()
+        {
+            var mockPaymentRepo = new Mock<IPaymentRepository>();
+            var mockLogger = new Mock<ILogger<PaymentsController>>();
+            var mockMapper = new Mock<IMapper>();
+            var mockBankRequestService = new Mock<IBankRequestService>();
+            var mockEncryptionService = new Mock<IEncryptionService>();
+
+            var payment = new Payment { Id = Guid.NewGuid() };
+            mockMapper.Setup(x => x.Map<Payment>(It.IsAny<PostPaymentRequest>())).Returns(payment);
+            mockBankRequestService.Setup(x => x.PostBankRequestAsync(It.IsAny<BankRequest>())).ReturnsAsync(() => { return new BankResponse(); });
+
+            var paymentsController = new PaymentsController(mockPaymentRepo.Object, mockBankRequestService.Object, mockEncryptionService.Object, mockMapper.Object, mockLogger.Object);
+
+            var response = await paymentsController.Post(new PostPaymentRequest { CardNumber = "4111111111111111" });
+
+            var okResult = Assert.IsType<OkObjectResult>(response);
+            var paymentResponse = Assert.IsType<PostPaymentResponse>(okResult.Value);
+            Assert.Equal(payment.Id, paymentResponse.PaymentId);
         }
     }
 }

@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PaymentGateway.Data;
 
 namespace PaymentGateway.Data.Migrations
 {
     [DbContext(typeof(PaymentsDbContext))]
-    partial class PaymentsDbContextModelSnapshot : ModelSnapshot
+    [Migration("20201005150028_RemoveCardNumber")]
+    partial class RemoveCardNumber
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -33,9 +35,6 @@ namespace PaymentGateway.Data.Migrations
 
                     b.Property<string>("CVV")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<byte[]>("CardNumber")
-                        .HasColumnType("varbinary(max)");
 
                     b.Property<string>("CurrencyCode")
                         .HasColumnType("nvarchar(max)");

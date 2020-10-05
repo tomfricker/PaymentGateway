@@ -13,8 +13,8 @@ namespace PaymentGateway.API.Services
     public class AesEncryptionService : IEncryptionService
     {
         private readonly IConfiguration _config;
-        private readonly byte[] _key;
-        private readonly byte[] _iv;
+        private byte[] _key;
+        private byte[] _iv;
 
         public AesEncryptionService(IConfiguration config)
         {
@@ -25,13 +25,14 @@ namespace PaymentGateway.API.Services
 
         public byte[] Encrypt(string str)
         {
-            var encryptedBytes = this.Encrypt(Encoding.UTF8.GetBytes(str), _key, _iv);
+            var encryptedBytes = Encrypt(Encoding.UTF8.GetBytes(str), _key, _iv);
+
             return encryptedBytes;
         }
 
-        public string Decrypt(byte[] encryptedString)
+        public string Decrypt(byte[] encryptedBytes)
         {
-            var decryptedBytes = this.Decrypt(encryptedString, _key, _iv);
+            var decryptedBytes = Decrypt(encryptedBytes, _key, _iv);
             var decryptedString = Encoding.UTF8.GetString(decryptedBytes);
 
             return decryptedString;

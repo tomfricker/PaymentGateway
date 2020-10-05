@@ -9,10 +9,10 @@ namespace PaymentGateway.API.Models.Profiles
     {
         public PaymentProfile()
         {
-            CreateMap<PostPaymentRequest, Payment>();
+            CreateMap<PostPaymentRequest, Payment>().ForMember(x => x.CardNumber, opt => opt.Ignore());
             CreateMap<PostPaymentRequest, BankRequest>();
             CreateMap<BankResponse, PostPaymentResponse>();
-            CreateMap<Payment, GetPaymentResponse>();
+            CreateMap<Payment, GetPaymentResponse>().ForMember(x => x.CardNumber, opt => opt.Ignore());
         }
     }
 }

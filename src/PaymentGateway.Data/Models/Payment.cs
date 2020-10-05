@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 using PaymentGateway.Core.Enums;
 
 namespace PaymentGateway.Data.Models
@@ -7,7 +8,7 @@ namespace PaymentGateway.Data.Models
     {
         public Guid Id { get; set; }
 
-        public string CardNumber { get; set; }
+        public byte[] CardNumber { get; set; }
 
         public string Name { get; set; }
 

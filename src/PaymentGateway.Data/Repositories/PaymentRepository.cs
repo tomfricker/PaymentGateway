@@ -15,11 +15,11 @@ namespace PaymentGateway.Data.Repositories
             _dbContext = dbContext;
         }
 
-        public async Task<bool> AddPaymentAsync(Payment payment)
+        public async Task AddPaymentAsync(Payment payment)
         {
             await _dbContext.Payments.AddAsync(payment);
 
-            return await _dbContext.SaveChangesAsync() == 1;
+            await _dbContext.SaveChangesAsync();
         }
 
         public async Task<Payment> GetPaymentAsync(Guid paymentId)
@@ -27,11 +27,11 @@ namespace PaymentGateway.Data.Repositories
             return await _dbContext.Payments.FirstOrDefaultAsync(p => p.Id == paymentId);
         }
 
-        public async Task<bool> UpdatePaymentAsync(Payment payment)
+        public async Task UpdatePaymentAsync(Payment payment)
         {
             _dbContext.Payments.Update(payment);
 
-            return await _dbContext.SaveChangesAsync() == 1;
+            await _dbContext.SaveChangesAsync();
         }
     }
 }

@@ -14,7 +14,7 @@ namespace PaymentGateway.API.Models
         public string CurrencyCode { get; set; }
 
         [Required]
-        [StringLength(12, MinimumLength = 12)]
+        [StringLength(16, MinimumLength = 16)]
         public string CardNumber { get; set; }
 
         [Required]
