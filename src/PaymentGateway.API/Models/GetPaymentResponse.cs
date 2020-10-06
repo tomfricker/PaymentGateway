@@ -14,6 +14,6 @@ namespace PaymentGateway.API.Models
 
         public string Name { get; set; }
 
-        public PaymentStatusCode PaymentStatus { get; set; }
+        public string PaymentStatus { get; set; }
     }
 }

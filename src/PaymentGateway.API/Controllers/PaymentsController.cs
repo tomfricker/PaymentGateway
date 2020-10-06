@@ -14,6 +14,7 @@ using Microsoft.Extensions.Logging;
 using PaymentGateway.API.Extensions;
 using PaymentGateway.API.Models;
 using PaymentGateway.API.Services.Contracts;
+using PaymentGateway.Core.Enums;
 using PaymentGateway.Core.Models;
 using PaymentGateway.Data.Models;
 using PaymentGateway.Data.Repositories.Contracts;
@@ -98,6 +99,7 @@ namespace PaymentGateway.API.Controllers
 
                 var response = _mapper.Map<GetPaymentResponse>(payment);
                 response.CardNumber = _encryptionService.Decrypt(payment.CardNumber).MaskCard();
+                response.PaymentStatus = Enum.GetName(typeof(PaymentStatusCode), payment.PaymentStatus);
 
                 _logger.LogInformation($"GET - Requested payment Id {id} returned OK");
                 return Ok(response);
