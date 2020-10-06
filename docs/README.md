@@ -53,7 +53,7 @@ Some of the API features include:
 * Add metrics, to time the calls to the endpoints in the API.  
 * Mutliple bank endpoints could be added to the config and named HttpClients could be added for each endpoint to simulate different banks being requested. 
 * Ecryption could be extended to store all data rather than just the Card Number for payment. 
-* Extra unit tests could be added to test different input/output.
+* Extra tests could be added to test different input/output.
 * More comprehensive logging could be performed to track all behaviour going in and out of the system. 
 * Authentication could be extended to have a store of users and passwords in the database. 
 * Authentication could be even further extended to request access tokens and distribute to known users for requests.
