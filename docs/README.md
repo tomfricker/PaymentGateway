@@ -1,5 +1,7 @@
 # Payment Gateway
 
+## Requirements to run
+
 This project requires an appsettings.json file with the following structure at the root of PaymentGateway.API project:
 
 ````markdown
@@ -25,7 +27,13 @@ This project requires an appsettings.json file with the following structure at t
 
 ````
 
-The API contains the following features:
+Sql Server needs to be installed, the connection string placed in appsettings and update-database needs to be run on the Package Manager Console from Visual Studio to initialise the database.
+
+Both PaymentGateway.API and MockBankA need to be running for the API to function as expected.
+
+## Features
+
+Some of the API features include:
 
 * Logging using NLog
 * AES Encryption for storing sensitive data
@@ -45,7 +53,7 @@ The API contains the following features:
 * Add metrics, to time the calls to the endpoints in the API.  
 * Mutliple bank endpoints could be added to the config and named HttpClients could be added for each endpoint to simulate different banks being requested. 
 * Ecryption could be extended to store all data rather than just the Card Number for payment. 
-* Extra unit tests could be added for all services and repositories. 
+* Extra unit tests could be added to test different input/output.
 * More comprehensive logging could be performed to track all behaviour going in and out of the system. 
 * Authentication could be extended to have a store of users and passwords in the database. 
-* Authentication could be even further extended to request access tokens and distributed to known users for requests.
+* Authentication could be even further extended to request access tokens and distribute to known users for requests.
