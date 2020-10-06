@@ -53,7 +53,7 @@ namespace PaymentGateway.Test.ApiTests
                 Name = "Fred Bloggs",
                 CardNumber = "4111111111111111",
                 Id = Guid.NewGuid(),
-                PaymentStatus = Core.Enums.PaymentStatusCode.Completed
+                PaymentStatus = "Completed"
             };
 
             mockPaymentRepo.Setup(x => x.GetPaymentAsync(It.IsAny<Guid>())).ReturnsAsync(() => new Payment());
