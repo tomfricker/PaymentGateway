@@ -27,7 +27,7 @@ This project requires an appsettings.json file with the following structure at t
 
 ````
 
-Sql Server needs to be installed, the connection string placed in appsettings and update-database needs to be run on the Package Manager Console from Visual Studio to initialise the database.
+Sql Server needs to be installed, the connection string placed in appsettings and `update-database` needs to be run on the Package Manager Console, specifying the data project, from Visual Studio to initialise the database.
 
 Both PaymentGateway.API and MockBankA need to be running for the API to function as expected.
 
