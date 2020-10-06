@@ -32,11 +32,20 @@ The API contains the following features:
 * SQL Server Code First Entity Framework for storing payment details
 * Http Client for sending requests and Polly for retries of failed requests
 * Basic Authentication for authorising requests
+* Automapper for mapping DTOs 
 
 ## Assumptions
 
-The way the bank would accept and return requests/responses was assumed. A status code rather than a string was returned to the user which again was assumed that they would understand what that would mean.
+* The way the bank would accept and return requests/responses. 
+* The information that was required such as name, card number, CVV etc... 
+* The format which the payment gateway would receive data, such as strings for card details.
 
 ## Further work
 
-Further extension to the project could be done to add metrics, to time the calls to the endpoints in the API.  Mutliple endpoints could be added to the config and multiple named HttpClients could be added for different endpoints to simulate different banks being requested.
+* Add metrics, to time the calls to the endpoints in the API.  
+* Mutliple bank endpoints could be added to the config and named HttpClients could be added for each endpoint to simulate different banks being requested. 
+* Ecryption could be extended to store all data rather than just the Card Number for payment. 
+* Extra unit tests could be added for all services and repositories. 
+* More comprehensive logging could be performed to track all behaviour going in and out of the system. 
+* Authentication could be extended to have a store of users and passwords in the database. 
+* Authentication could be even further extended to request access tokens and distributed to known users for requests.
